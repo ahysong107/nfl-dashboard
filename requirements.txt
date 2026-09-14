@@ -1,0 +1,6 @@
+pandas
+pyarrow
+requests
+nfl_data_py
+scikit-learn
+scipy

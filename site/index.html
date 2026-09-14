@@ -1,0 +1,587 @@
+<title>Gridiron Edge</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Work+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f4f2ec; --surface:#ffffff; --surface-2:#eae7dd; --border:#d8d4c6;
+  --text:#14231c; --text-dim:#5b6660; --text-faint:#8a9089;
+  --accent:#b9791a; --accent-ink:#3d2705; --accent-soft:#f1e0bd;
+  --good:#1f7a4d; --good-soft:#d9ecdf; --warn:#b23b1f; --warn-soft:#f3ddd4;
+  --home-dot:#1f7a4d; --away-dot:#7a5a1f;
+  --shadow: 0 1px 2px rgba(20,35,28,.06), 0 8px 24px -12px rgba(20,35,28,.18);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0c1310; --surface:#131b16; --surface-2:#1a251e; --border:#293428;
+    --text:#eef1ec; --text-dim:#9aa79d; --text-faint:#6d7871;
+    --accent:#e3a83c; --accent-ink:#2a1c05; --accent-soft:#3a2c10;
+    --good:#49bf82; --good-soft:#173425; --warn:#e2704f; --warn-soft:#3a2018;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 12px 32px -16px rgba(0,0,0,.55);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0c1310; --surface:#131b16; --surface-2:#1a251e; --border:#293428;
+  --text:#eef1ec; --text-dim:#9aa79d; --text-faint:#6d7871;
+  --accent:#e3a83c; --accent-ink:#2a1c05; --accent-soft:#3a2c10;
+  --good:#49bf82; --good-soft:#173425; --warn:#e2704f; --warn-soft:#3a2018;
+  --shadow: 0 1px 2px rgba(0,0,0,.3), 0 12px 32px -16px rgba(0,0,0,.55);
+}
+*{box-sizing:border-box;}
+body{margin:0;background:var(--bg);color:var(--text);font-family:"Work Sans",system-ui,sans-serif;-webkit-font-smoothing:antialiased;}
+h1,h2,h3,.display{font-family:"Oswald",system-ui,sans-serif;text-transform:uppercase;letter-spacing:.02em;text-wrap:balance;}
+.mono{font-family:"JetBrains Mono",ui-monospace,monospace;font-variant-numeric:tabular-nums;}
+a{color:inherit;}
+::selection{background:var(--accent-soft);}
+
+/* ---- header ---- */
+.topbar{position:sticky;top:0;z-index:20;background:var(--bg);border-bottom:1px solid var(--border);}
+.topbar-inner{max-width:1320px;margin:0 auto;padding:18px 24px 0;}
+.brand-row{display:flex;align-items:baseline;justify-content:space-between;gap:16px;flex-wrap:wrap;}
+.brand{display:flex;align-items:baseline;gap:12px;}
+.brand h1{font-size:26px;margin:0;font-weight:700;color:var(--text);}
+.brand .flag{display:inline-block;width:9px;height:9px;background:var(--accent);border-radius:1px;transform:translateY(-2px);}
+.subtitle{color:var(--text-dim);font-size:13px;margin:2px 0 14px;}
+.meta-note{color:var(--text-faint);font-size:11.5px;max-width:420px;text-align:right;line-height:1.5;}
+
+.tabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:14px;scrollbar-width:none;}
+.tabs[hidden]{display:none;}
+.tabs::-webkit-scrollbar{display:none;}
+.tab{flex:0 0 auto;padding:8px 16px;border-radius:999px;border:1px solid var(--border);background:var(--surface);color:var(--text-dim);font-size:13px;font-weight:600;letter-spacing:.02em;cursor:pointer;white-space:nowrap;transition:background .12s,color .12s,border-color .12s;}
+.tab:hover{border-color:var(--accent);color:var(--text);}
+.tab.active{background:var(--text);color:var(--bg);border-color:var(--text);}
+:root[data-theme="dark"] .tab.active, @media (prefers-color-scheme:dark){.tab.active{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);}}
+
+/* ---- layout ---- */
+.wrap{max-width:1320px;margin:0 auto;padding:22px 24px 80px;}
+.games-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap:16px;}
+.games-grid[hidden]{display:none;}
+
+.game-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow);overflow:hidden;display:flex;flex-direction:column;}
+.game-head{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--border);background:var(--surface-2);}
+.matchup{display:flex;align-items:center;gap:8px;font-family:"Oswald",sans-serif;font-size:15px;font-weight:600;letter-spacing:.03em;}
+.team-chip{width:8px;height:8px;border-radius:50%;display:inline-block;}
+.kickoff{font-size:11.5px;color:var(--text-dim);text-align:right;}
+
+.player-list{display:flex;flex-direction:column;}
+.player-row{display:grid;grid-template-columns:22px 1fr auto;gap:10px;align-items:center;padding:10px 16px;border-bottom:1px solid var(--border);cursor:pointer;background:transparent;border-left:3px solid transparent;transition:background .1s,border-color .1s;text-align:left;width:100%;font:inherit;color:inherit;}
+.player-row:last-child{border-bottom:none;}
+.player-row:hover{background:var(--surface-2);border-left-color:var(--accent);}
+.rank{color:var(--text-faint);font-size:12px;font-family:"JetBrains Mono",monospace;}
+.p-name{font-weight:600;font-size:13.5px;}
+.p-sub{font-size:11px;color:var(--text-dim);margin-top:1px;}
+.p-tags{display:flex;gap:4px;flex-wrap:wrap;margin-top:4px;}
+.tag{font-size:9.5px;font-weight:600;letter-spacing:.03em;text-transform:uppercase;padding:2px 6px;border-radius:4px;background:var(--surface-2);color:var(--text-dim);border:1px solid var(--border);}
+.tag.good{background:var(--good-soft);color:var(--good);border-color:transparent;}
+.tag.warn{background:var(--warn-soft);color:var(--warn);border-color:transparent;}
+.tag.injury{border:1px solid var(--warn);font-weight:700;}
+
+.metric-col{text-align:right;min-width:78px;}
+.metric-val{font-family:"JetBrains Mono",monospace;font-weight:600;font-size:16px;font-variant-numeric:tabular-nums;}
+.metric-lbl{font-size:9.5px;color:var(--text-faint);text-transform:uppercase;letter-spacing:.04em;}
+.bar-track{height:4px;border-radius:2px;background:var(--surface-2);margin-top:5px;overflow:hidden;}
+.bar-fill{height:100%;background:var(--accent);border-radius:2px;}
+
+.show-more{padding:9px 16px;font-size:11.5px;color:var(--text-dim);text-align:center;cursor:pointer;border-top:1px dashed var(--border);}
+.show-more:hover{color:var(--accent);}
+
+.empty-note{padding:24px 16px;font-size:12.5px;color:var(--text-faint);text-align:center;}
+
+/* ---- modal ---- */
+.overlay{position:fixed;inset:0;background:rgba(10,14,11,.5);backdrop-filter:blur(2px);display:flex;align-items:flex-start;justify-content:center;padding:5vh 16px;z-index:100;overflow-y:auto;}
+.overlay[hidden]{display:none;}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:16px;max-width:640px;width:100%;box-shadow:var(--shadow);margin-bottom:5vh;}
+.modal-head{padding:20px 24px 16px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;gap:12px;}
+.modal-head h2{font-size:22px;margin:0 0 2px;}
+.modal-sub{color:var(--text-dim);font-size:13px;}
+.close-btn{background:var(--surface-2);border:1px solid var(--border);color:var(--text-dim);width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:16px;line-height:1;flex:0 0 auto;}
+.close-btn:hover{color:var(--text);border-color:var(--accent);}
+.modal-body{padding:20px 24px 26px;display:flex;flex-direction:column;gap:22px;}
+
+.score-tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}
+.tile{background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:10px 8px;text-align:center;}
+.tile .v{font-family:"JetBrains Mono",monospace;font-size:20px;font-weight:600;}
+.tile .l{font-size:9.5px;color:var(--text-faint);text-transform:uppercase;letter-spacing:.04em;margin-top:2px;}
+.tile.accent{background:var(--accent-soft);border-color:transparent;}
+.tile.accent .v{color:var(--accent-ink);}
+:root[data-theme="dark"] .tile.accent .v{color:var(--accent);}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .tile.accent .v{color:var(--accent);}}
+
+.section-title{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--text-faint);font-weight:600;margin:0 0 8px;}
+.debt-line{font-size:12.5px;color:var(--text-dim);line-height:1.5;margin:0 0 10px;}
+
+table.grid-table{width:100%;border-collapse:collapse;font-size:12.5px;}
+table.grid-table th{text-align:right;font-weight:600;color:var(--text-faint);font-size:10px;text-transform:uppercase;letter-spacing:.03em;padding:0 6px 6px;}
+table.grid-table th:first-child{text-align:left;}
+table.grid-table td{padding:7px 6px;border-top:1px solid var(--border);text-align:right;font-family:"JetBrains Mono",monospace;}
+table.grid-table td:first-child{text-align:left;font-family:"Work Sans",sans-serif;color:var(--text);}
+
+.box-rows,.shell-rows{display:flex;flex-direction:column;gap:8px;}
+.box-row{display:grid;grid-template-columns:110px 1fr auto;gap:10px;align-items:center;font-size:12px;}
+.box-label{color:var(--text-dim);}
+.box-bar-track{height:8px;border-radius:4px;background:var(--surface-2);overflow:hidden;}
+.box-bar-fill{height:100%;border-radius:4px;background:var(--good);}
+.box-stats{font-family:"JetBrains Mono",monospace;color:var(--text-dim);font-size:11px;white-space:nowrap;}
+
+.stat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;}
+.stat-list{display:flex;flex-direction:column;gap:8px;}
+.stat-item{display:flex;justify-content:space-between;font-size:12.5px;border-bottom:1px dotted var(--border);padding-bottom:6px;}
+.stat-item .k{color:var(--text-dim);}
+.stat-item .v{font-family:"JetBrains Mono",monospace;font-weight:600;}
+
+.lines-table{width:100%;border-collapse:collapse;font-size:13px;}
+.lines-table th{text-align:right;font-size:10px;color:var(--text-faint);text-transform:uppercase;padding:0 8px 6px;}
+.lines-table th:first-child{text-align:left;}
+.lines-table td{padding:8px;border-top:1px solid var(--border);text-align:right;font-family:"JetBrains Mono",monospace;}
+.lines-table td:first-child{text-align:left;font-family:"Work Sans",sans-serif;}
+
+.footer-note{margin-top:30px;padding-top:18px;border-top:1px solid var(--border);color:var(--text-faint);font-size:11.5px;max-width:640px;line-height:1.6;}
+
+/* ---- views tab row (slightly bolder than category tabs) ---- */
+.views .tab{font-family:"Oswald",sans-serif;letter-spacing:.04em;}
+
+/* ---- rankings ---- */
+.ranking-list{background:var(--surface);border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow);overflow:hidden;max-width:720px;}
+.ranking-row{display:grid;grid-template-columns:30px 1fr auto;gap:12px;align-items:center;padding:12px 18px;border-bottom:1px solid var(--border);cursor:pointer;background:transparent;border-left:3px solid transparent;width:100%;text-align:left;font:inherit;color:inherit;}
+.ranking-row:last-child{border-bottom:none;}
+.ranking-row:hover{background:var(--surface-2);border-left-color:var(--accent);}
+.ranking-row .rank{font-size:14px;color:var(--text-faint);}
+.ranking-row .rank.top3{color:var(--accent);font-weight:700;}
+.ranking-row .p-sub{font-size:11.5px;color:var(--text-dim);margin-top:1px;}
+
+/* ---- parlays ---- */
+.tier-section{margin-bottom:28px;}
+.tier-head{display:flex;align-items:baseline;gap:10px;margin-bottom:12px;}
+.tier-head h2{font-size:20px;margin:0;}
+.tier-badge{font-size:11px;padding:3px 10px;border-radius:999px;font-weight:600;text-transform:uppercase;letter-spacing:.03em;}
+.tier-badge.Safe{background:var(--good-soft);color:var(--good);}
+.tier-badge.Standard{background:var(--accent-soft);color:var(--accent-ink);}
+:root[data-theme="dark"] .tier-badge.Standard{color:var(--accent);}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .tier-badge.Standard{color:var(--accent);}}
+.tier-badge.Bold{background:var(--warn-soft);color:var(--warn);}
+.tier-note{font-size:12px;color:var(--text-faint);}
+.parlay-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px;}
+.parlay-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow);padding:16px 18px;display:flex;flex-direction:column;gap:12px;}
+.parlay-legs{display:flex;flex-direction:column;gap:9px;}
+.parlay-leg{display:flex;justify-content:space-between;gap:10px;font-size:12.5px;padding-bottom:9px;border-bottom:1px dotted var(--border);}
+.parlay-leg:last-child{border-bottom:none;padding-bottom:0;}
+.parlay-leg .leg-desc{font-weight:600;}
+.parlay-leg .leg-meta{color:var(--text-faint);font-size:11px;margin-top:1px;}
+.parlay-leg .leg-prob{font-family:"JetBrains Mono",monospace;color:var(--text-dim);white-space:nowrap;}
+.parlay-foot{display:flex;justify-content:space-between;align-items:center;padding-top:10px;border-top:1px solid var(--border);}
+.parlay-combined{font-family:"JetBrains Mono",monospace;font-size:18px;font-weight:600;}
+.parlay-odds{font-family:"JetBrains Mono",monospace;font-size:13px;color:var(--text-dim);}
+.sgp-flag{font-size:9.5px;text-transform:uppercase;letter-spacing:.03em;color:var(--text-faint);}
+</style>
+
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="brand-row">
+      <div class="brand">
+        <span class="flag"></span>
+        <h1>Gridiron Edge</h1>
+      </div>
+      <div class="meta-note" id="metaNote">Loading week…</div>
+    </div>
+    <div class="subtitle">Anytime-TD and yardage probabilities, scored from play-by-play usage, red-zone role, and defensive matchups.</div>
+    <div class="tabs views" id="views"></div>
+    <div class="tabs" id="tabs"></div>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="games-grid" id="gamesGrid"></div>
+  <div class="ranking-list" id="rankingsList" hidden></div>
+  <div class="parlays-view" id="parlaysView" hidden></div>
+  <div class="footer-note">
+    Built from nflverse play-by-play, weekly stats, and FTN charting data (box counts). Anytime-TD probability is a logistic model calibrated on real 2023&ndash;2025 game outcomes. Opportunity Score currently reflects opponent matchup only &mdash; Vegas implied team totals are not yet connected. Yardage/reception lines and parlay combined probabilities are model-projected, not sportsbook odds, and assume each leg is independent &mdash; same-game legs are usually correlated in reality. Coverage Shell splits require proprietary charting data not available in free sources and are omitted.
+  </div>
+</div>
+
+<div class="overlay" id="overlay" hidden>
+  <div class="modal" id="modal"></div>
+</div>
+
+<script>
+const TEAM_COLORS = {
+ARI:"#97233F",ATL:"#A71930",BAL:"#241773",BUF:"#00338D",CAR:"#0085CA",CHI:"#0B162A",
+CIN:"#FB4F14",CLE:"#FF3C00",DAL:"#041E42",DEN:"#FB4F14",DET:"#0076B6",GB:"#203731",
+HOU:"#03202F",IND:"#002C5F",JAX:"#101820",KC:"#E31837",LA:"#003594",LAC:"#0080C6",
+LV:"#A5ACAF",MIA:"#008E97",MIN:"#4F2683",NE:"#002244",NO:"#D3BC8D",NYG:"#0B2265",
+NYJ:"#125740",PHI:"#004C54",PIT:"#FFB612",SEA:"#69BE28",SF:"#AA0000",TB:"#D50A0A",
+TEN:"#4B92DB",WAS:"#5A1414"
+};
+
+const TABS = [
+  {key:"anytime_td", label:"Anytime TD"},
+  {key:"pass_yards", label:"Pass Yards"},
+  {key:"pass_tds", label:"Pass TDs"},
+  {key:"rush_yards", label:"Rush Yards"},
+  {key:"receptions", label:"Receptions"},
+];
+
+const VIEWS = [
+  {key:"matchups", label:"Matchups"},
+  {key:"rankings", label:"Rankings"},
+  {key:"parlays", label:"System Parlays"},
+];
+
+let DATA = null;
+let activeView = "matchups";
+let activeTab = "anytime_td";
+const expanded = new Set();
+
+function renderViews(){
+  const el = document.getElementById("views");
+  el.innerHTML = VIEWS.map(v => `<button class="tab ${v.key===activeView?'active':''}" data-view="${v.key}">${v.label}</button>`).join("");
+  el.querySelectorAll(".tab").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      activeView = btn.dataset.view;
+      renderViews();
+      renderAll();
+    });
+  });
+}
+
+function renderAll(){
+  const tabsEl = document.getElementById("tabs");
+  const gamesGrid = document.getElementById("gamesGrid");
+  const rankingsList = document.getElementById("rankingsList");
+  const parlaysView = document.getElementById("parlaysView");
+
+  tabsEl.hidden = activeView === "parlays";
+  gamesGrid.hidden = activeView !== "matchups";
+  rankingsList.hidden = activeView !== "rankings";
+  parlaysView.hidden = activeView !== "parlays";
+
+  if(activeView === "matchups"){ renderTabs(); renderGames(); }
+  else if(activeView === "rankings"){ renderTabs(); renderRankings(); }
+  else { renderParlays(); }
+}
+
+function fmtDate(d){
+  try{
+    const dt = new Date(d + "T00:00:00");
+    return dt.toLocaleDateString(undefined,{weekday:"short",month:"short",day:"numeric"});
+  }catch(e){ return d; }
+}
+
+function teamDot(team){
+  const c = TEAM_COLORS[team] || "#888";
+  return `<span class="team-chip" style="background:${c}"></span>`;
+}
+
+function renderTabs(){
+  const el = document.getElementById("tabs");
+  el.innerHTML = TABS.map(t => `<button class="tab ${t.key===activeTab?'active':''}" data-tab="${t.key}">${t.label}</button>`).join("");
+  el.querySelectorAll(".tab").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      activeTab = btn.dataset.tab;
+      renderTabs();
+      if(activeView === "rankings") renderRankings(); else renderGames();
+    });
+  });
+}
+
+function metricFor(key, p){
+  if(key === "anytime_td"){
+    return {val: p.td_probability.toFixed(1)+"%", label:"TD prob", pct: p.td_probability};
+  }
+  if(key === "pass_yards" || key === "rush_yards"){
+    const top = p.lines[Math.floor(p.lines.length/2)] || p.lines[0];
+    return {val: p.projected.toFixed(0)+" yd", label:"projected", pct: top ? top.prob_over : 50};
+  }
+  if(key === "pass_tds"){
+    return {val: p.projected.toFixed(1), label:"proj TDs", pct: Math.min(100, p.projected/3.5*100)};
+  }
+  if(key === "receptions"){
+    return {val: p.projected.toFixed(1), label:"proj rec", pct: Math.min(100, p.projected/10*100)};
+  }
+}
+
+function tagClass(tag){
+  if(["DOUBTFUL","QUESTIONABLE"].includes(tag)) return "warn injury";
+  if(["Elite Red Zone Role","Goal Line Back","Target Monster","High Volume","Soft TD Defense","Soft Matchup","Due For TD"].includes(tag)) return "good";
+  if(["Regression Risk","Tough Matchup"].includes(tag)) return "warn";
+  return "";
+}
+
+function playerRow(p, idx, tabKey){
+  const m = metricFor(tabKey, p);
+  const tags = (p.reason_tags||[]).slice(0,2).map(t=>`<span class="tag ${tagClass(t)}">${t}</span>`).join("");
+  return `<button class="player-row" data-pid="${p.player_id}" data-tab="${tabKey}" data-game="${p.__game_id}">
+    <span class="rank">${idx+1}</span>
+    <span>
+      <div class="p-name">${p.name}</div>
+      <div class="p-sub">${p.position} &middot; ${p.is_home ? 'vs' : '@'} ${p.opponent}</div>
+      ${tags ? `<div class="p-tags">${tags}</div>` : ""}
+    </span>
+    <span class="metric-col">
+      <div class="metric-val">${m.val}</div>
+      <div class="metric-lbl">${m.label}</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${Math.max(4,Math.min(100,m.pct))}%"></div></div>
+    </span>
+  </button>`;
+}
+
+function renderGames(){
+  const grid = document.getElementById("gamesGrid");
+  const cards = DATA.games.map(g=>{
+    let list = (g.players[activeTab] || []).map(p => ({...p, __game_id: g.game_id}));
+    if(list.length === 0){
+      return `<div class="game-card">
+        <div class="game-head">
+          <div class="matchup">${teamDot(g.away_team)}${g.away_team} <span style="color:var(--text-faint);font-weight:400;">@</span> ${teamDot(g.home_team)}${g.home_team}</div>
+          <div class="kickoff">${fmtDate(g.gameday)}</div>
+        </div>
+        <div class="empty-note">No qualifying players this week for this prop.</div>
+      </div>`;
+    }
+    const showKey = g.game_id + "|" + activeTab;
+    const isExpanded = expanded.has(showKey);
+    const shown = isExpanded ? list : list.slice(0,5);
+    const rows = shown.map((p,i)=>playerRow(p,i,activeTab)).join("");
+    const more = list.length > 5 ? `<div class="show-more" data-showkey="${showKey}">${isExpanded ? "Show less" : `Show ${list.length-5} more`}</div>` : "";
+    return `<div class="game-card">
+      <div class="game-head">
+        <div class="matchup">${teamDot(g.away_team)}${g.away_team} <span style="color:var(--text-faint);font-weight:400;">@</span> ${teamDot(g.home_team)}${g.home_team}</div>
+        <div class="kickoff">${fmtDate(g.gameday)}</div>
+      </div>
+      <div class="player-list">${rows}</div>
+      ${more}
+    </div>`;
+  }).join("");
+  grid.innerHTML = cards;
+
+  grid.querySelectorAll(".player-row").forEach(row=>{
+    row.addEventListener("click", ()=>{
+      const pid = row.dataset.pid, gid = row.dataset.game, tab = row.dataset.tab;
+      const game = DATA.games.find(g=>g.game_id===gid);
+      const player = game.players[tab].find(p=>p.player_id===pid);
+      openModal(player, tab, game);
+    });
+  });
+  grid.querySelectorAll(".show-more").forEach(el=>{
+    el.addEventListener("click", ()=>{
+      const key = el.dataset.showkey;
+      if(expanded.has(key)) expanded.delete(key); else expanded.add(key);
+      renderGames();
+    });
+  });
+}
+
+function renderRankings(){
+  const el = document.getElementById("rankingsList");
+  const list = DATA.rankings[activeTab] || [];
+  if(list.length === 0){
+    el.innerHTML = `<div class="empty-note">No qualifying players this week for this prop.</div>`;
+    return;
+  }
+  el.innerHTML = list.map((p,i)=>{
+    const m = metricFor(activeTab, p);
+    const tags = (p.reason_tags||[]).slice(0,3).map(t=>`<span class="tag ${tagClass(t)}">${t}</span>`).join("");
+    return `<button class="ranking-row" data-pid="${p.player_id}" data-game="${p.game_id}">
+      <span class="rank ${i<3?'top3':''}">${i+1}</span>
+      <span>
+        <div class="p-name">${p.name}</div>
+        <div class="p-sub">${p.position} &middot; ${p.game_label}</div>
+        ${tags ? `<div class="p-tags">${tags}</div>` : ""}
+      </span>
+      <span class="metric-col">
+        <div class="metric-val">${m.val}</div>
+        <div class="metric-lbl">${m.label}</div>
+        <div class="bar-track"><div class="bar-fill" style="width:${Math.max(4,Math.min(100,m.pct))}%"></div></div>
+      </span>
+    </button>`;
+  }).join("");
+
+  el.querySelectorAll(".ranking-row").forEach(row=>{
+    row.addEventListener("click", ()=>{
+      const pid = row.dataset.pid, gid = row.dataset.game;
+      const game = DATA.games.find(g=>g.game_id===gid);
+      const player = game.players[activeTab].find(p=>p.player_id===pid);
+      openModal(player, activeTab, game);
+    });
+  });
+}
+
+const TIER_NOTES = {
+  safe: "Higher floor legs, tighter combined range. Still not a guarantee.",
+  standard: "Balanced risk: a mix of strong roles and plausible matchup upside.",
+  bold: "Longer-shot combinations for bigger multipliers &mdash; expect most of these to miss.",
+};
+
+function parlayLegRow(leg){
+  return `<div class="parlay-leg">
+    <span>
+      <div class="leg-desc">${leg.description}</div>
+      <div class="leg-meta">${leg.team} &middot; ${leg.game_label}</div>
+    </span>
+    <span class="leg-prob">${(leg.prob*100).toFixed(0)}%</span>
+  </div>`;
+}
+
+function parlayCard(pl){
+  return `<div class="parlay-card">
+    <div class="parlay-legs">${pl.legs.map(parlayLegRow).join("")}</div>
+    <div class="parlay-foot">
+      <div>
+        <div class="parlay-combined">${pl.combined_prob}%</div>
+        <div class="metric-lbl">combined probability</div>
+      </div>
+      <div style="text-align:right;">
+        <div class="parlay-odds">${pl.fair_odds}</div>
+        ${pl.same_game ? '<div class="sgp-flag">Same-game &mdash; legs are correlated</div>' : '<div class="sgp-flag">Cross-game</div>'}
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderParlays(){
+  const el = document.getElementById("parlaysView");
+  const tiers = [
+    {key:"safe", label:"Safe", data: DATA.parlays.safe},
+    {key:"standard", label:"Standard", data: DATA.parlays.standard},
+    {key:"bold", label:"Bold", data: DATA.parlays.bold},
+  ];
+  el.innerHTML = tiers.map(t => `
+    <div class="tier-section">
+      <div class="tier-head">
+        <span class="tier-badge ${t.label}">${t.label}</span>
+        <h2 style="font-size:16px;text-transform:none;letter-spacing:0;color:var(--text-dim);font-weight:600;margin:0;font-family:'Work Sans',sans-serif;">${TIER_NOTES[t.key]}</h2>
+      </div>
+      <div class="parlay-grid">${t.data.map(parlayCard).join("") || '<div class="empty-note">No qualifying combinations this week.</div>'}</div>
+    </div>
+  `).join("");
+}
+
+function pct(n){ return (n*100).toFixed(0)+"%"; }
+
+function renderAnytimeModal(p, game){
+  const zoneRows = p.zone_grid.map(z=>`<tr>
+    <td>${z.zone}</td><td>${z.carries || "&mdash;"}</td><td>${z.targets || "&mdash;"}</td><td>${z.xtd.toFixed(2)}</td>
+  </tr>`).join("");
+
+  let boxHtml = "";
+  if(p.box_count){
+    const order = ["light","neutral","stacked"];
+    const labels = {light:"Light box (6 or fewer)", neutral:"Neutral box (7)", stacked:"Stacked box (8+)"};
+    const maxAtt = Math.max(...order.filter(k=>p.box_count[k]).map(k=>p.box_count[k].attempts));
+    const rows = order.filter(k=>p.box_count[k]).map(k=>{
+      const b = p.box_count[k];
+      return `<div class="box-row">
+        <div class="box-label">${labels[k]}</div>
+        <div class="box-bar-track"><div class="box-bar-fill" style="width:${(b.attempts/maxAtt*100).toFixed(0)}%"></div></div>
+        <div class="box-stats">${b.ypc} ypc &middot; ${b.attempts} att &middot; ${pct(b.td_rate)} TD</div>
+      </div>`;
+    }).join("");
+    boxHtml = `<div><p class="section-title">Box Count Clone <span style="text-transform:none;letter-spacing:0;color:var(--text-faint);font-weight:400;">&mdash; ${p.box_count.light ? p.box_count.light.season : ''} season, FTN charting</span></p>
+      <div class="box-rows">${rows}</div></div>`;
+  }
+
+  const debtWord = p.td_debt >= 0 ? "Due to convert" : "Regression risk";
+
+  return `
+    <div class="modal-head">
+      <div>
+        <h2>${p.name}</h2>
+        <div class="modal-sub">${p.position} &middot; ${p.team} ${p.is_home?'vs':'@'} ${p.opponent} &middot; ${fmtDate(game.gameday)}</div>
+      </div>
+      <button class="close-btn" id="closeModal">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="score-tiles">
+        <div class="tile accent"><div class="v">${p.venom_score}</div><div class="l">Ali Score</div></div>
+        <div class="tile accent"><div class="v">${p.td_probability}%</div><div class="l">TD Probability</div></div>
+        <div class="tile"><div class="v">${p.expected_td}</div><div class="l">Expected TDs</div></div>
+        <div class="tile"><div class="v">${p.scored_td}</div><div class="l">Scored</div></div>
+      </div>
+
+      <div>
+        <p class="section-title">TD Debt <span style="text-transform:none;letter-spacing:0;color:var(--text-faint);font-weight:400;">&mdash; Cheat Code</span></p>
+        <p class="debt-line"><strong class="mono" style="color:${p.td_debt>=0?'var(--good)':'var(--warn)'}">${p.td_debt>=0?'+':''}${p.td_debt}</strong> &middot; ${debtWord}. Touches priced by where they happened, at the league conversion rate for that zone, over his last ${p.opportunity ? '' : ''}trailing meaningful games.</p>
+        <table class="grid-table">
+          <tr><th>Zone</th><th>Carries</th><th>Targets</th><th>xTD</th></tr>
+          ${zoneRows}
+        </table>
+      </div>
+
+      ${boxHtml}
+
+      <div class="stat-grid">
+        <div>
+          <p class="section-title">Baseline Profile</p>
+          <div class="stat-list">
+            <div class="stat-item"><span class="k">Red Zone Role</span><span class="v">${p.baseline.red_zone_role}%</span></div>
+            <div class="stat-item"><span class="k">Volume</span><span class="v">${p.baseline.volume_pg} tch/g</span></div>
+            <div class="stat-item"><span class="k">Goal Line</span><span class="v">${p.baseline.goal_line_pg} /g</span></div>
+            <div class="stat-item"><span class="k">Target Share</span><span class="v">${p.baseline.target_share}%</span></div>
+            <div class="stat-item"><span class="k">TD Rate</span><span class="v">${p.baseline.td_rate}%</span></div>
+          </div>
+        </div>
+        <div>
+          <p class="section-title">Opportunity Factors</p>
+          <div class="stat-list">
+            <div class="stat-item"><span class="k">Matchup</span><span class="v">${p.opportunity.matchup_td_pg} TD/g</span></div>
+            <div class="stat-item"><span class="k">Opportunity Score</span><span class="v">${p.opportunity.opportunity_score}</span></div>
+            <div class="stat-item"><span class="k">Games Since TD</span><span class="v">${p.opportunity.games_since_td}</span></div>
+            <div class="stat-item"><span class="k">Due Bonus</span><span class="v">${p.due_bonus > 0 ? '+'+p.due_bonus : '&mdash;'}</span></div>
+          </div>
+        </div>
+      </div>
+
+      ${p.reason_tags && p.reason_tags.length ? `<div class="p-tags">${p.reason_tags.map(t=>`<span class="tag ${tagClass(t)}">${t}</span>`).join("")}</div>` : ""}
+    </div>
+  `;
+}
+
+function renderPropModal(p, tabKey, game, tabLabel){
+  const linesRows = p.lines.map(l=>`<tr><td>Over ${l.line}</td><td>${l.prob_over}%</td></tr>`).join("");
+  return `
+    <div class="modal-head">
+      <div>
+        <h2>${p.name}</h2>
+        <div class="modal-sub">${p.position} &middot; ${p.team} ${p.is_home?'vs':'@'} ${p.opponent} &middot; ${fmtDate(game.gameday)}</div>
+      </div>
+      <button class="close-btn" id="closeModal">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="score-tiles">
+        <div class="tile accent"><div class="v">${p.projected}</div><div class="l">Projected ${tabLabel}</div></div>
+        <div class="tile"><div class="v">&plusmn;${p.std}</div><div class="l">Std Dev (form)</div></div>
+        <div class="tile"><div class="v">${p.opponent_allowed_pg ?? "&mdash;"}</div><div class="l">Opp Allowed /g</div></div>
+        <div class="tile"><div class="v">${p.league_avg_allowed ?? "&mdash;"}</div><div class="l">League Avg /g</div></div>
+      </div>
+      <div>
+        <p class="section-title">Modeled Lines <span style="text-transform:none;letter-spacing:0;color:var(--text-faint);font-weight:400;">&mdash; not sportsbook odds</span></p>
+        <table class="lines-table">
+          <tr><th>Threshold</th><th>Prob. Over</th></tr>
+          ${linesRows}
+        </table>
+      </div>
+      <p class="debt-line">Based on his last ${p.games_sample} meaningful games (mean ${p.projected}, trailing std ${p.std}), matchup-adjusted to ${p.opponent}'s current defense.</p>
+      ${p.reason_tags && p.reason_tags.length ? `<div class="p-tags">${p.reason_tags.map(t=>`<span class="tag ${tagClass(t)}">${t}</span>`).join("")}</div>` : ""}
+    </div>
+  `;
+}
+
+function openModal(p, tabKey, game){
+  const modal = document.getElementById("modal");
+  const tabLabel = TABS.find(t=>t.key===tabKey).label;
+  modal.innerHTML = tabKey === "anytime_td" ? renderAnytimeModal(p, game) : renderPropModal(p, tabKey, game, tabLabel);
+  document.getElementById("overlay").hidden = false;
+  document.getElementById("closeModal").addEventListener("click", closeModal);
+}
+function closeModal(){ document.getElementById("overlay").hidden = true; }
+document.getElementById("overlay").addEventListener("click", (e)=>{ if(e.target.id==="overlay") closeModal(); });
+document.addEventListener("keydown", (e)=>{ if(e.key==="Escape") closeModal(); });
+
+fetch("data.json").then(r=>r.json()).then(d=>{
+  DATA = d;
+  document.getElementById("metaNote").textContent = `Week ${d.week} · ${d.season} season · ${d.games.length} games`;
+  renderViews();
+  renderAll();
+}).catch(err=>{
+  document.getElementById("gamesGrid").innerHTML = `<div class="empty-note">Could not load data.json: ${err}</div>`;
+});
+</script>
