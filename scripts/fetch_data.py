@@ -1,6 +1,5 @@
 """Fetch and cache raw nflverse data locally as parquet files."""
 import pandas as pd
-import nfl_data_py as nfl
 import os
 
 DATA_DIR = os.path.join(os.path.dirname(__file__), "..", "data")
@@ -38,7 +37,12 @@ def main():
 
     sched_path = os.path.join(DATA_DIR, "schedules.parquet")
     if not os.path.exists(sched_path):
-        sched = nfl.import_schedules([2025, 2026])
+        # nfl_data_py.import_schedules() hard-codes a fetch from
+        # habitatring.com/games.csv, a personal mirror that some sandboxed
+        # network environments block by egress policy. It's just a mirror of
+        # this same nflverse/nfldata GitHub file, so pull that directly.
+        sched = pd.read_csv("https://raw.githubusercontent.com/nflverse/nfldata/master/data/games.csv")
+        sched = sched[sched["season"].isin([2025, 2026])]
         sched.to_parquet(sched_path)
         print(f"[ok] schedules.parquet shape={sched.shape}")
     else:
