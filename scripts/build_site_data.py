@@ -83,6 +83,17 @@ def main():
         df["current_pos_rank"] = df["player_id"].map(current_rank)
         return df
 
+    # a player who's fallen down the CURRENT depth chart (benched, injured,
+    # beaten out) still shows up on trailing box-score stats until his role
+    # change shows up in several games of data -- the depth chart already
+    # reflects it today, even before an injury report catches up. Cut
+    # anyone clearly buried at their position, regardless of why.
+    DEPTH_RELEVANCE = {"RB": 3, "WR": 3, "TE": 2, "QB": 2}
+
+    def apply_depth_relevance(df):
+        threshold = df["position_group"].map(DEPTH_RELEVANCE).fillna(3)
+        return df[df["current_pos_rank"] <= threshold].copy()
+
     # injury report for the target week -- filed progressively (practice
     # reports Wed-Fri, then a final game-status designation), so this may be
     # empty until the week's reports actually start coming in. "Out" players
@@ -107,6 +118,7 @@ def main():
 
     # only currently-rostered players (per today's depth chart) whose team plays this week
     scores = apply_current_team(scores)
+    scores = apply_depth_relevance(scores)
     scores = apply_injury_status(scores)
     scores = scores[scores["team"].isin(team_opponent.keys())].copy()
     scores["opponent_next"] = scores["team"].map(lambda t: team_opponent[t]["opp"])
@@ -136,6 +148,7 @@ def main():
     # of the anytime-TD skill-position scoring table, since QBs never appear
     # in `scores` (baseline formula is RB/WR/TE-shaped) but must appear here.
     props = apply_current_team(props)
+    props = apply_depth_relevance(props)
     props = apply_injury_status(props)
     props = props[props["team"].isin(team_opponent.keys())].copy()
     props["opponent_next"] = props["team"].map(lambda t: team_opponent[t]["opp"])
