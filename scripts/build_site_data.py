@@ -16,10 +16,11 @@ os.makedirs(SITE_DIR, exist_ok=True)
 
 
 def detect_target_week(sched):
-    """The next fully-upcoming week (zero completed games) in the current
-    season -- so this script needs no manual edits from one week to the
-    next. Assumes a Tue/Fri-or-earlier refresh cadence, i.e. it always runs
-    after the prior week's Monday night game has finished."""
+    """The current NFL week: the earliest week that still has at least one
+    game not yet completed. Using "zero completed games" instead would
+    break mid-week -- e.g. refreshing Friday/Saturday after Thursday Night
+    Football has already finished but Sunday/Monday haven't, which would
+    incorrectly skip ahead to next week."""
     now = datetime.now(timezone.utc)
     season_guess = now.year if now.month >= 3 else now.year - 1
     s = sched[sched["season"] == season_guess]
@@ -29,11 +30,11 @@ def detect_target_week(sched):
 
     completed = s.groupby("week")["home_score"].apply(lambda x: x.notna().sum())
     total = s.groupby("week")["home_score"].size()
-    fully_upcoming = completed[completed == 0]
-    if len(fully_upcoming) == 0:
+    not_yet_finished = completed[completed < total]
+    if len(not_yet_finished) == 0:
         target_week = int(s["week"].max())  # season is over / no upcoming week found
     else:
-        target_week = int(fully_upcoming.index.min())
+        target_week = int(not_yet_finished.index.min())
     return season_guess, target_week
 
 
