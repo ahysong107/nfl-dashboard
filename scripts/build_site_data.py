@@ -145,6 +145,19 @@ def main():
         z = z + coef[f"{c}_pct"] * scores[f"{c}_pct"]
     scores["td_probability"] = sigmoid(z)
 
+    # The calibrated probability above is trained only on usage/matchup
+    # percentiles -- it doesn't see TD debt (zone-pricing: has the ball found
+    # him in scoring spots more than the box score shows) or the due-streak
+    # bonus, so a player tagged "Regression Risk" could still rank as a top
+    # play, and a player we've flagged "Due For TD" wouldn't actually move up
+    # the probability-sorted board. Layer in a small, bounded adjustment for
+    # both -- not a second model, just correcting the inconsistency between
+    # the number shown and the tag sitting next to it. Capped so neither
+    # signal can swing the calibrated base rate by more than 15 points.
+    debt_adj = (scores["td_debt"] * 0.035).clip(-0.15, 0.15)
+    due_adj = scores["due_bonus"] * 0.004
+    scores["td_probability"] = (scores["td_probability"] + debt_adj + due_adj).clip(0.01, 0.95)
+
     # ---- prop boards (pass yards/TDs, rush yards, receptions) are independent
     # of the anytime-TD skill-position scoring table, since QBs never appear
     # in `scores` (baseline formula is RB/WR/TE-shaped) but must appear here.
