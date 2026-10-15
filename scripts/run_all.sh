@@ -6,6 +6,12 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
+# Install with the same interpreter the pipeline runs under. On the cloud
+# sandbox the bare `pip` command can belong to a different Python than
+# `python3`, so a plain `pip install` lands packages where the scripts
+# can't see them.
+python3 -m pip install -q -r requirements.txt || echo "pip install failed; continuing with the existing environment"
+
 python3 scripts/fetch_data.py
 python3 scripts/fetch_depth_charts.py
 python3 scripts/fetch_injuries.py
