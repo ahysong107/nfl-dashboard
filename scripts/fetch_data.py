@@ -37,10 +37,9 @@ def main():
 
     sched_path = os.path.join(DATA_DIR, "schedules.parquet")
     if not os.path.exists(sched_path):
-        # nfl_data_py.import_schedules() hard-codes a fetch from
-        # habitatring.com/games.csv, a personal mirror that some sandboxed
-        # network environments block by egress policy. It's just a mirror of
-        # this same nflverse/nfldata GitHub file, so pull that directly.
+        # Pull the schedule straight from the nflverse/nfldata GitHub file.
+        # (The common third-party helper reads a personal mirror of this same
+        # file that some sandboxed networks block. No extra package is needed.)
         sched = pd.read_csv("https://raw.githubusercontent.com/nflverse/nfldata/master/data/games.csv")
         sched = sched[sched["season"].isin([2025, 2026])]
         sched.to_parquet(sched_path)
